@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 from aiohttp import web
+from datetime import datetime, timezone
 from telethon import TelegramClient, events, errors
 from telethon.sessions import StringSession
 from config import API_ID, API_HASH, SOURCE_CHANNELS, TARGET_USERS, SESSION_STRING
@@ -45,6 +46,11 @@ def main():
     
     @client.on(events.NewMessage(chats=SOURCE_CHANNELS))
     async def handler(event):
+        # Sadece CANLI mesajları işle (Son 60 saniye içinde atılmış olanlar)
+        now = datetime.now(timezone.utc)
+        if (now - event.message.date).total_seconds() > 60:
+            return
+            
         # Aynı mesajın (örn: bağlantı kopmalarında) tekrar gelmesini engellemek için cache kontrolü
         msg_unique_id = f"{event.chat_id}_{event.message.id}"
         if msg_unique_id in processed_messages:
