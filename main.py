@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from aiohttp import web
-from telethon import TelegramClient, events
+from telethon import TelegramClient, events, errors
 from telethon.sessions import StringSession
 from config import API_ID, API_HASH, SOURCE_CHANNELS, TARGET_USERS, SESSION_STRING
 from qr_login import SESSION_NAME
@@ -52,6 +52,13 @@ def main():
                         await client.send_file(target, file=event.message.media, caption=event.message.text)
                     else:
                         await client.send_message(target, event.message.text)
+                    
+                    # Telegram spam filtresine takılmamak için hedefler arası 1.5 saniye bekle
+                    await asyncio.sleep(1.5)
+                    
+                except errors.FloodWaitError as e:
+                    logging.warning(f"Telegram spam siniri! {e.seconds} saniye bekleniyor...")
+                    await asyncio.sleep(e.seconds)
                 except Exception as e:
                     logging.error(f"Hedefe ({target}) gönderilemedi: {e}")
                 
