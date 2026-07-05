@@ -57,14 +57,23 @@ def main():
             try:
                 logging.info("Yeni mesaj yakalandı, kopyalanıyor...")
                 
+                # Kanal adını al
+                channel_name = "Bilinmeyen Kanal"
+                if event.chat and hasattr(event.chat, 'title'):
+                    channel_name = event.chat.title
+                
+                # Mesaj metninin başına kanal adını ekle
+                original_text = event.message.text or ""
+                formatted_text = f"📢 **{channel_name}**\n\n{original_text}" if original_text else f"📢 **{channel_name}**"
+                
                 # Mesajı kopyalayarak tüm hedeflere gönderir (ileti etiketi olmaz, orijinal kanal gizli kalır)
                 # Medya varsa medyayı da destekler
                 for target in TARGET_USERS:
                     try:
                         if event.message.media:
-                            await client.send_file(target, file=event.message.media, caption=event.message.text)
+                            await client.send_file(target, file=event.message.media, caption=formatted_text)
                         else:
-                            await client.send_message(target, event.message.text)
+                            await client.send_message(target, formatted_text)
                         
                         # Telegram spam filtresine takılmamak için hedefler arası 1.5 saniye bekle
                         await asyncio.sleep(1.5)
