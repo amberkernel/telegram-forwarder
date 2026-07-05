@@ -57,14 +57,10 @@ def main():
             try:
                 logging.info("Yeni mesaj yakalandı, kopyalanıyor...")
                 
-                # Mesajı kopyalayarak tüm hedeflere gönderir (ileti etiketi olmaz, orijinal kanal gizli kalır)
-                # Medya varsa medyayı da destekler
+                # Mesajı anket vb. tüm özellikleriyle orijinal kanaldan iletir (Forward)
                 for target in TARGET_USERS:
                     try:
-                        if event.message.media:
-                            await client.send_file(target, file=event.message.media, caption=event.message.text)
-                        else:
-                            await client.send_message(target, event.message.text)
+                        await client.forward_messages(target, event.message)
                         
                         # Telegram spam filtresine takılmamak için hedefler arası 1.5 saniye bekle
                         await asyncio.sleep(1.5)
