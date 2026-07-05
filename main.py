@@ -71,7 +71,11 @@ def main():
                 for target in TARGET_USERS:
                     try:
                         if event.message.media:
-                            await client.send_file(target, file=event.message.media, caption=formatted_text)
+                            try:
+                                await client.send_file(target, file=event.message.media, caption=formatted_text)
+                            except Exception as media_e:
+                                logging.warning(f"Medya desteklenmiyor (Anket vb olabilir), sadece metin deneniyor...")
+                                await client.send_message(target, formatted_text)
                         else:
                             await client.send_message(target, formatted_text)
                         
