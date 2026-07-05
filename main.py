@@ -39,9 +39,22 @@ def main():
         client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
         logging.info("Yerel oturum (.session) kullanılıyor...")
     
+    # Mesajların sırasını korumak ve çakışmaları önlemek için kilit (Lock)
+    send_lock = asyncio.Lock()
+    processed_messages = set()
+    
     @client.on(events.NewMessage(chats=SOURCE_CHANNELS))
     async def handler(event):
-        try:
+        # Aynı mesajın (örn: bağlantı kopmalarında) tekrar gelmesini engellemek için cache kontrolü
+        msg_unique_id = f"{event.chat_id}_{event.message.id}"
+        if msg_unique_id in processed_messages:
+            return
+        processed_messages.add(msg_unique_id)
+        if len(processed_messages) > 1000:
+            processed_messages.clear()
+            
+        async with send_lock:
+            try:
             logging.info("Yeni mesaj yakalandı, kopyalanıyor...")
             
             # Mesajı kopyalayarak tüm hedeflere gönderir (ileti etiketi olmaz, orijinal kanal gizli kalır)
