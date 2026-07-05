@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import os
+from aiohttp import web
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
 from config import API_ID, API_HASH, SOURCE_CHANNELS, TARGET_USERS, SESSION_STRING
@@ -7,6 +9,21 @@ from qr_login import SESSION_NAME
 
 # Loglama ayarları
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+
+# --- Sahte Web Sunucusu (Render'ı Kandırmak İçin) ---
+async def handle_web(request):
+    return web.Response(text="Bot aktif ve calisiyor! (Render Uptime)")
+
+async def web_server():
+    app = web.Application()
+    app.router.add_get('/', handle_web)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
+    logging.info(f"Sahte web sunucusu {port} portunda baslatildi.")
+# ----------------------------------------------------
 
 def main():
     if not SOURCE_CHANNELS or not TARGET_USERS:
@@ -46,6 +63,8 @@ def main():
     logging.info("Çıkmak için Ctrl+C'ye basın.")
     
     with client:
+        # Web sunucusunu Telegram döngüsüyle birlikte çalıştır
+        client.loop.create_task(web_server())
         # Mesaj dinleme döngüsünü başlat
         client.run_until_disconnected()
 
