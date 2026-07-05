@@ -55,29 +55,29 @@ def main():
             
         async with send_lock:
             try:
-            logging.info("Yeni mesaj yakalandı, kopyalanıyor...")
-            
-            # Mesajı kopyalayarak tüm hedeflere gönderir (ileti etiketi olmaz, orijinal kanal gizli kalır)
-            # Medya varsa medyayı da destekler
-            for target in TARGET_USERS:
-                try:
-                    if event.message.media:
-                        await client.send_file(target, file=event.message.media, caption=event.message.text)
-                    else:
-                        await client.send_message(target, event.message.text)
-                    
-                    # Telegram spam filtresine takılmamak için hedefler arası 1.5 saniye bekle
-                    await asyncio.sleep(1.5)
-                    
-                except errors.FloodWaitError as e:
-                    logging.warning(f"Telegram spam siniri! {e.seconds} saniye bekleniyor...")
-                    await asyncio.sleep(e.seconds)
-                except Exception as e:
-                    logging.error(f"Hedefe ({target}) gönderilemedi: {e}")
+                logging.info("Yeni mesaj yakalandı, kopyalanıyor...")
                 
-            logging.info("Mesaj başarıyla kopyalandı!")
-        except Exception as e:
-            logging.error(f"Mesaj gönderilirken hata oluştu: {e}")
+                # Mesajı kopyalayarak tüm hedeflere gönderir (ileti etiketi olmaz, orijinal kanal gizli kalır)
+                # Medya varsa medyayı da destekler
+                for target in TARGET_USERS:
+                    try:
+                        if event.message.media:
+                            await client.send_file(target, file=event.message.media, caption=event.message.text)
+                        else:
+                            await client.send_message(target, event.message.text)
+                        
+                        # Telegram spam filtresine takılmamak için hedefler arası 1.5 saniye bekle
+                        await asyncio.sleep(1.5)
+                        
+                    except errors.FloodWaitError as e:
+                        logging.warning(f"Telegram spam siniri! {e.seconds} saniye bekleniyor...")
+                        await asyncio.sleep(e.seconds)
+                    except Exception as e:
+                        logging.error(f"Hedefe ({target}) gönderilemedi: {e}")
+                    
+                logging.info("Mesaj başarıyla kopyalandı!")
+            except Exception as e:
+                logging.error(f"Mesaj gönderilirken hata oluştu: {e}")
 
     logging.info(f"{SOURCE_CHANNELS} kanalları dinleniyor...")
     logging.info("Çıkmak için Ctrl+C'ye basın.")
